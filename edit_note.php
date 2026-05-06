@@ -7,15 +7,18 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$id = $_GET['id'];
+$id = (int) $_POST['id'];
 
-$stmt = $conn->prepare("SELECT * FROM notes WHERE id = ? AND user_id = ?");
+
+$stmt = $conn->prepare("SELECT id, title, content FROM notes WHERE id = ? AND user_id = ?");
 $stmt->bind_param("ii", $id, $_SESSION['user_id']);
 $stmt->execute();
-$note = $stmt->get_result()->fetch_assoc();
+
+$result = $stmt->get_result();
+$note = $result->fetch_assoc();
 
 if (!$note) {
-    die("Note not found");
+    die("Unauthorized or Note not found");
 }
 
 if (isset($_POST['update_note'])) {
@@ -23,9 +26,9 @@ if (isset($_POST['update_note'])) {
     $title = trim($_POST['title']);
     $content = trim($_POST['content']);
 
-    $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ? WHERE id = ?");
-    $stmt->bind_param("ssi", $title, $content, $id);
-    $stmt->execute();
+    $update = $conn->prepare("UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?");
+    $update->bind_param("ssii", $title, $content, $id, $_SESSION['user_id']);
+    $update->execute();
 
     header("Location: notes.php");
     exit();
