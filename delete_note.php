@@ -7,11 +7,15 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$id = $_GET['id'];
+$id = $_POST['id'];
 
-$stmt = $conn->prepare("SELECT * FROM notes WHERE id = ? AND user_id = ?");
+$stmt = $conn->prepare("SELECT id FROM notes WHERE id = ? AND user_id = ?");
 $stmt->bind_param("ii", $id, $_SESSION['user_id']);
 $stmt->execute();
+$result = $stmt->get_result();
 
+if ($result->num_rows === 0) {
+    die("Unauthorized");
+}
 header("Location: notes.php");
 exit();
