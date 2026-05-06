@@ -7,15 +7,16 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$id = $_POST['id'];
+$id = (int) $_POST['id'];
 
-$stmt = $conn->prepare("SELECT id FROM notes WHERE id = ? AND user_id = ?");
+$stmt = $conn->prepare("DELETE FROM notes WHERE id = ? AND user_id = ?");
 $stmt->bind_param("ii", $id, $_SESSION['user_id']);
 $stmt->execute();
-$result = $stmt->get_result();
 
-if ($result->num_rows === 0) {
-    die("Unauthorized");
+
+if ($stmt->affected_rows === 0) {
+    die("Unauthorized or Note not found");
 }
+
 header("Location: notes.php");
 exit();
